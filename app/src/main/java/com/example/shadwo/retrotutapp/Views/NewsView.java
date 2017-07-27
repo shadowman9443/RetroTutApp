@@ -15,4 +15,6 @@ public interface NewsView {
 
     void lodaFinish();
 
+     void showErrorMessage();
+
 }

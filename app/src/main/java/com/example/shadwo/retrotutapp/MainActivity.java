@@ -8,7 +8,9 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.widget.ProgressBar;
+import android.widget.Toast;
 
+import com.example.shadwo.retrotutapp.Application.RetroRxDragarMvpApplication;
 import com.example.shadwo.retrotutapp.Model.News;
 import com.example.shadwo.retrotutapp.Presenter.NewsPresenter;
 import com.example.shadwo.retrotutapp.Presenter.NewsPresenterImpl;
@@ -16,6 +18,8 @@ import com.example.shadwo.retrotutapp.Views.NewsView;
 import com.example.shadwo.retrotutapp.adapter.MoviesAdapter;
 
 import java.util.List;
+
+import javax.inject.Inject;
 
 public class MainActivity extends AppCompatActivity implements NewsView{
     private static final String TAG = MainActivity.class.getSimpleName();
@@ -26,15 +30,24 @@ public class MainActivity extends AppCompatActivity implements NewsView{
     NewsPresenter newsPresenter;
     private ProgressBar progressBar;
 
+
+    @Inject
+    NewsPresenter presenter;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        ((RetroRxDragarMvpApplication) getApplication()).getAppComponent().inject(this);
         recyclerView = (RecyclerView) findViewById(R.id.recycler_view);
         progressBar = (ProgressBar) findViewById(R.id.progress);
-        newsPresenter=new NewsPresenterImpl(this,this);
-        newsPresenter.getNews();
-        mProgressDialog = new ProgressDialog(this);
+       /* newsPresenter=new NewsPresenterImpl(this,this);
+        newsPresenter.getNews();*/
+     //   mProgressDialog = new ProgressDialog(this);
+
+        presenter.setView(this);
+        presenter.getNews();
 
        /* ApiInterface apiService =
                 ApiClient.getClient().create(ApiInterface.class);
@@ -86,9 +99,7 @@ public class MainActivity extends AppCompatActivity implements NewsView{
     @Override
     public void init() {
 
-        mProgressDialog.setIndeterminate(true);
-        mProgressDialog.setMessage("Loading...");
-        mProgressDialog.show();
+
 
         progressBar.setVisibility(View.VISIBLE);
 
@@ -97,8 +108,12 @@ public class MainActivity extends AppCompatActivity implements NewsView{
 
     @Override
     public void lodaFinish() {
-        if (mProgressDialog.isShowing())
-            mProgressDialog.dismiss();
+
         progressBar.setVisibility(View.INVISIBLE);
+    }
+
+    @Override
+    public void showErrorMessage() {
+        Toast.makeText(this,"Error", Toast.LENGTH_SHORT).show();
     }
 }
