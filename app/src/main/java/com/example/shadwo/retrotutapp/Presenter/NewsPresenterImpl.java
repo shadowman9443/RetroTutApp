@@ -15,6 +15,10 @@ import java.util.List;
 
 import javax.inject.Inject;
 
+import io.reactivex.Observer;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.schedulers.Schedulers;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -82,8 +86,9 @@ public class NewsPresenterImpl implements NewsPresenter {
 
             }
         });*/
-        //with dragger
-        Call<NewsResponse> call = apiInterfacewithDrg.getAnswers();
+
+        //with dragger without rx
+      /*  Call<NewsResponse> call = apiInterfacewithDrg.getAnswers();
         call.enqueue(new Callback<NewsResponse>() {
             @Override
             public void onResponse(Call<NewsResponse> call, Response<NewsResponse> response) {
@@ -103,7 +108,46 @@ public class NewsPresenterImpl implements NewsPresenter {
                 newsView.showErrorMessage();
                 newsView.lodaFinish();
             }
-        });
+        });*/
+        //with dragger with rx
+        try{
+            apiInterfacewithDrg=ApiClient.getClient().create(ApiInterface.class);
+            apiInterfacewithDrg.getAnswers()
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(new Observer<NewsResponse>() {
+                        @Override
+                        public void onSubscribe(Disposable d) {
+
+                        }
+
+                        @Override
+                        public void onNext(NewsResponse value) {
+                            newsView.init();
+                            List<News> newsList = value.getResults();
+                            newsView.countriesReady(newsList);
+                            newsView.lodaFinish();
+                            //    newsPresenterListener.countriesReady(newsList);
+                            Log.d(TAG, "Number of movies received: " + newsList.size());
+                        }
+
+                        @Override
+                        public void onComplete() {
+
+                        }
+
+
+                        @Override
+                        public void onError(Throwable e) {
+                            Log.e(TAG, e.getMessage());
+                        }
+
+
+                    });
+        }catch (Exception ex){
+            Log.e(TAG, ex.getMessage());
+        }
+
 
     }
 

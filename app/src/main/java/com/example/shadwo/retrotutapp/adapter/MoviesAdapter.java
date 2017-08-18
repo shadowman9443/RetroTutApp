@@ -14,6 +14,11 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.support.v7.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.bumptech.glide.load.resource.drawable.GlideDrawable;
+import com.bumptech.glide.request.RequestListener;
+import com.bumptech.glide.request.target.Target;
 import com.example.shadwo.retrotutapp.Model.News;
 import com.example.shadwo.retrotutapp.R;
 
@@ -74,8 +79,29 @@ public class MoviesAdapter extends RecyclerView.Adapter<MoviesAdapter.MovieViewH
         holder.newsDescription.setText(movies.get(position).getDescription());
         DownloadImageTask downloadImageTask=  new DownloadImageTask( holder.imageView);
 
+        Glide
+                .with(context)
+                .load(movies.get(position).getUrlToImage())
+                .listener(new RequestListener<String, GlideDrawable>() {
+                    @Override
+                    public boolean onException(Exception e, String model, Target<GlideDrawable> target, boolean isFirstResource) {
+                        // TODO: 08/11/16 handle failure
+                        //  movieVH.mProgress.setVisibility(View.GONE);
+                        return false;
+                    }
 
-        downloadImageTask.execute(movies.get(position).getUrlToImage());
+                    @Override
+                    public boolean onResourceReady(GlideDrawable resource, String model, Target<GlideDrawable> target, boolean isFromMemoryCache, boolean isFirstResource) {
+                        // image ready, hide progress now
+                        //  movieVH.mProgress.setVisibility(View.GONE);
+                        return false;   // return false if you want Glide to handle everything else.
+                    }
+                })
+                .diskCacheStrategy(DiskCacheStrategy.ALL)   // cache both original & resized image
+                .centerCrop()
+                .crossFade()
+                .into( holder.imageView);
+       // downloadImageTask.execute(movies.get(position).getUrlToImage());
 
 
     }
